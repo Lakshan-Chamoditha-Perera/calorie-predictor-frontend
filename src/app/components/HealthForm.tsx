@@ -53,10 +53,10 @@ export default function HealthForm() {
 
     return (
         <main className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-            <div className="w-full max-w-xl bg-white rounded-xl shadow-lg border border-gray-200">
-                <div className="text-center border-b px-8 py-6 flex items-center justify-center gap-2">
-                    <FileText className="w-6 h-6 text-gray-800" />
-                    <h2 className="text-2xl font-semibold text-gray-800">Health Assessment</h2>
+            <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg border border-gray-200">
+                <div className="text-left border-b px-8 py-6 flex items-center  gap-2">
+                    {/* <FileText className="w-6 h-6 text-gray-800" /> */}
+                    <h2 className="text-2xl font-semibold text-gray-800">Health Assessment - Calorie Predictor</h2>
                 </div>
                 <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -140,21 +140,21 @@ export default function HealthForm() {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex justify-between gap-4 pt-4">
+                    <div className="flex flex-row items-center justify-end gap-4 p-4">
                         <button
                             type="reset"
                             onClick={() => {
                                 reset()
                                 setCaloriesBurned(null)
                             }}
-                            className="w-full h-12 rounded-md border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 flex items-center justify-center gap-2"
+                            className="max-w-[80px] w-full h-12 rounded-md border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 flex items-center justify-center gap-2"
                         >
                             <X className="w-5 h-5" />
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className={`w-full h-12 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 ${mutation.isPending ? 'opacity-50 cursor-not-allowed' : ''
+                            className={`max-w-[80px] w-full h-12 rounded-md bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition flex items-center justify-center gap-2 ${mutation.isPending ? 'opacity-50 cursor-not-allowed' : ''
                                 }`}
                             disabled={mutation.isPending}
                         >
