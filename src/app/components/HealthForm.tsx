@@ -33,7 +33,9 @@ export default function HealthForm() {
     // Mutation logic using TanStack Query
     const mutation = useMutation({
         mutationFn: async (data: FormValues) => {
-            const response = await axios.post('/api/health-assessment', data)
+            const base_url = process.env.NEXT_PUBLIC_BASE_URL;
+            console.log(data)
+            const response = await axios.post(base_url + '/predict', data)
             return response.data
         },
         onSuccess: (data) => {
