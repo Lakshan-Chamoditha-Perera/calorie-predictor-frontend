@@ -7,7 +7,10 @@ import axios from 'axios'
 import {
     User, Users, Ruler, Scale, Clock, Heart,
     Thermometer, Activity, Check, Calculator,
-    Target, Zap, TrendingUp, Flame, Info
+    Target, Zap, TrendingUp, Flame, Info,
+    AlertCircle,
+    Loader2,
+    CheckCircle2
 } from 'lucide-react'
 import { toast } from 'react-toastify'
 import FormSelect from './FormSelect'
@@ -276,42 +279,65 @@ export default function HealthForm() {
                                 </div>
                             </section>
 
-                            {/* Results */}
-                            <section>
-                                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                                    <Calculator className="w-5 h-5 text-blue-600" />
-                                    Results
-                                </h3>
-                                <div className="bg-gradient-to-r from-blue-50 to-gray-50 rounded-xl p-6 border border-gray-200 transition-all duration-300">
+                            <section className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-blue-100 rounded-lg">
+                                        <Calculator className="w-5 h-5 text-blue-600" />
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900">Activity Results</h3>
+                                </div>
+
+                                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300">
                                     {isPending && (
-                                        <div className="text-center py-6 text-blue-600 font-medium flex items-center justify-center gap-2">
-                                            <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
-                                            Calculating...
-                                        </div>
-                                    )}
-                                    {caloriesBurned !== null && (
-                                        <div className="text-center py-6 animate-fade-in">
-                                            <div className="inline-flex items-center gap-3 mb-3">
-                                                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center transition-transform duration-200 hover:scale-105">
-                                                    <Check className="w-5 h-5 text-green-600" />
+                                        <div className="flex flex-col items-center justify-center py-8 gap-3">
+                                            <div className="relative">
+                                                <div className="w-12 h-12 bg-blue-50 rounded-full animate-pulse"></div>
+                                                <div className="absolute inset-0 flex items-center justify-center">
+                                                    <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
                                                 </div>
                                             </div>
-                                            <p className="text-gray-500 text-sm mb-1">Estimated Calories Burned</p>
-                                            <p className="text-3xl font-bold text-gray-900">
-                                                {caloriesBurned.toFixed(1)}
-                                                <span className="text-lg text-gray-500 ml-2">kcal</span>
-                                            </p>
+                                            <p className="text-blue-600 font-medium">Calculating your results...</p>
                                         </div>
                                     )}
+
+                                    {caloriesBurned !== null && (
+                                        <div className="animate-fade-in-up">
+                                            <div className="flex flex-col items-center py-4">
+                                                <div className="mb-4 p-3 bg-gradient-to-br from-green-100 to-blue-100 rounded-full">
+                                                    <CheckCircle2 className="w-8 h-8 text-green-600" />
+                                                </div>
+                                                <p className="text-sm font-medium text-gray-500 mb-1">CALORIES BURNED</p>
+                                                <div className="flex items-end gap-1">
+                                                    <span className="text-4xl font-bold text-gray-900">
+                                                        {caloriesBurned.toFixed(1)}
+                                                    </span>
+                                                    <span className="text-lg text-gray-400 mb-1">kcal</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {!isPending && !isError && caloriesBurned === null && (
-                                        <div className="text-center py-10">
-                                            <Activity className="w-10 h-10 text-gray-400 mx-auto mb-3 transition-transform duration-200 hover:scale-105" />
-                                            <p className="text-gray-500 text-sm">Enter your metrics and click "Calculate" to see results</p>
+                                        <div className="flex flex-col items-center py-8 gap-4">
+                                            <div className="p-4 bg-gray-50 rounded-full">
+                                                <Activity className="w-6 h-6 text-gray-400" />
+                                            </div>
+                                            <div className="text-center space-y-1">
+                                                <p className="font-medium text-gray-500">Ready to calculate</p>
+                                                <p className="text-sm text-gray-400">Enter your details to see your results</p>
+                                            </div>
                                         </div>
                                     )}
+
                                     {isError && (
-                                        <div className="text-center py-6 text-red-600 font-medium">
-                                            Error calculating calories. Please try again.
+                                        <div className="flex flex-col items-center py-8 gap-3">
+                                            <div className="p-3 bg-red-50 rounded-full">
+                                                <AlertCircle className="w-6 h-6 text-red-500" />
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="font-medium text-red-600">Calculation error</p>
+                                                <p className="text-sm text-red-400 mt-1">Please check your inputs and try again</p>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
