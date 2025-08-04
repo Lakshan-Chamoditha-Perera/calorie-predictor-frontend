@@ -8,10 +8,9 @@ import {
     User, Users, Ruler, Scale, Clock, Heart,
     Thermometer, Activity, Check, Calculator
 } from 'lucide-react'
-
+import { toast } from 'react-toastify'
 import FormSelect from './FormSelect'
 import FormInput from './FormInput'
-import { toast } from 'react-toastify'
 
 type FormValues = {
     age: number
@@ -38,16 +37,15 @@ export default function HealthForm() {
         mutationFn: async (data: FormValues) => {
             const base_url = process.env.NEXT_PUBLIC_BASE_URL
             const response = await axios.post(base_url + '/predict', data)
-            return response.data // Expected: { prediction: number }
+            return response.data
         },
         onMutate: () => {
             toastId.current = toast.loading('Calculating calories burned...')
         },
         onSuccess: (result) => {
-            console.log(result)
             setCaloriesBurned(result?.data?.prediction)
             toast.update(toastId.current!, {
-                render: 'Calories burned calculated successfully!',
+                render: 'Calories calculated successfully!',
                 type: 'success',
                 isLoading: false,
                 autoClose: 3000,
@@ -55,7 +53,7 @@ export default function HealthForm() {
         },
         onError: () => {
             toast.update(toastId.current!, {
-                render: 'An error occurred while calculating calories burned.',
+                render: 'Error calculating calories.',
                 type: 'error',
                 isLoading: false,
                 autoClose: 3000,
@@ -69,32 +67,33 @@ export default function HealthForm() {
     }
 
     return (
-        <main className="min-h-screen bg-[#EEEEEE] py-12 px-4">
-            <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm p-8">
-
+        <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-lg p-6 sm:p-8">
                 {/* Header */}
-                <div className="flex flex-row gap-4 mb-4">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                        <Calculator className="w-8 h-8 text-blue-600" />
+                <div className="flex items-center gap-4 mb-8">
+                    <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full">
+                        <Calculator className="w-6 h-6 text-blue-600" />
                     </div>
-                    <div className='flex flex-col text-left'>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-2">Calorie Prediction</h1>
-                        <p className="text-lg text-gray-600">Enter your health metrics to calculate estimated calories burned</p>
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Calorie Burn Calculator</h1>
+                        <p className="text-sm sm:text-base text-gray-500 mt-1">Enter your metrics to estimate calories burned during activity</p>
                     </div>
                 </div>
 
-                <form onSubmit={handleSubmit(onSubmit)}>
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
                     {/* Personal Information */}
-                    <div className="mb-10">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Personal Information</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <section>
+                        <h2 className="text-lg font-semibold text-gray-800 mb-4">Personal Information</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                             <FormInput
                                 id="age"
-                                label="Age"
+                                label="Age (years)"
                                 Icon={User}
+                                type="number"
                                 register={register}
                                 error={errors.age?.message}
-                                options={{ required: 'Age is required', min: 1, max: 120 }}
+                                options={{ required: 'Age is required', min: { value: 1, message: 'Age must be at least 1' }, max: { value: 120, message: 'Age cannot exceed 120' } }}
+                                className="w-full"
                             />
                             <FormSelect
                                 id="sex"
@@ -103,121 +102,134 @@ export default function HealthForm() {
                                 register={register}
                                 error={errors.sex?.message}
                                 options={{ required: 'Sex is required' }}
+                                className="w-full"
                             />
                         </div>
-                    </div>
+                    </section>
 
                     {/* Physical Measurements */}
-                    <div className="mb-10">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Physical Measurements</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <section>
+                        <h2 className="text-lg font-semibold text-gray-800 mb-4">Physical Measurements</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                             <FormInput
                                 id="height"
                                 label="Height (cm)"
                                 Icon={Ruler}
+                                type="number"
                                 register={register}
                                 error={errors.height?.message}
-                                options={{ required: 'Height is required', min: 50, max: 300 }}
+                                options={{ required: 'Height is required', min: { value: 50, message: 'Height must be at least 50 cm' }, max: { value: 300, message: 'Height cannot exceed 300 cm' } }}
+                                className="w-full"
                             />
                             <FormInput
                                 id="weight"
                                 label="Weight (kg)"
                                 Icon={Scale}
+                                type="number"
                                 step="0.1"
                                 register={register}
                                 error={errors.weight?.message}
-                                options={{ required: 'Weight is required', min: 1, max: 500 }}
+                                options={{ required: 'Weight is required', min: { value: 1, message: 'Weight must be at least 1 kg' }, max: { value: 500, message: 'Weight cannot exceed 500 kg' } }}
+                                className="w-full"
                             />
                         </div>
-                    </div>
+                    </section>
 
                     {/* Activity & Health Data */}
-                    <div className="mb-10">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Activity & Health Data</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <section>
+                        <h2 className="text-lg font-semibold text-gray-800 mb-4">Activity & Health Data</h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
                             <FormInput
                                 id="duration"
-                                label="Duration (minutes)"
+                                label="Duration (min)"
                                 Icon={Clock}
+                                type="number"
                                 register={register}
                                 error={errors.duration?.message}
-                                options={{ required: 'Duration is required', min: 1, max: 1440 }}
+                                options={{ required: 'Duration is required', min: { value: 1, message: 'Duration must be at least 1 minute' }, max: { value: 1440, message: 'Duration cannot exceed 1440 minutes' } }}
+                                className="w-full"
                             />
                             <FormInput
                                 id="heartRate"
                                 label="Heart Rate (bpm)"
                                 Icon={Heart}
+                                type="number"
                                 register={register}
                                 error={errors.heartRate?.message}
-                                options={{ required: 'Heart rate is required' }}
+                                options={{ required: 'Heart rate is required', min: { value: 30, message: 'Heart rate must be at least 30 bpm' }, max: { value: 220, message: 'Heart rate cannot exceed 220 bpm' } }}
+                                className="w-full"
                             />
                             <FormInput
                                 id="bodyTemp"
-                                label="Body Temperature (°C)"
+                                label="Body Temp (°C)"
                                 Icon={Thermometer}
+                                type="number"
                                 step="0.1"
                                 register={register}
                                 error={errors.bodyTemp?.message}
-                                options={{ required: 'Body temperature is required' }}
+                                options={{ required: 'Body temperature is required', min: { value: 35, message: 'Temperature must be at least 35°C' }, max: { value: 42, message: 'Temperature cannot exceed 42°C' } }}
+                                className="w-full"
                             />
                         </div>
-                    </div>
+                    </section>
 
                     {/* Results */}
-                    <div className="mb-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Results</h2>
-                        <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <section>
+                        <h2 className="text-lg font-semibold text-gray-800 mb-4">Results</h2>
+                        <div className="bg-gray-50 rounded-xl p-6 border border-gray-200 transition-all duration-300">
                             {isPending && (
-                                <div className="text-center py-8 text-blue-600 font-medium">
+                                <div className="text-center py-6 text-blue-600 font-medium flex items-center justify-center gap-2">
+                                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-blue-600 border-t-transparent"></div>
                                     Calculating...
                                 </div>
                             )}
                             {caloriesBurned !== null && (
-                                <div className="text-center py-8">
-                                    <div className="inline-flex items-center gap-3 mb-4">
-                                        <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                                            <Check className="w-6 h-6 text-green-600" />
+                                <div className="text-center py-6">
+                                    <div className="inline-flex items-center gap-3 mb-3">
+                                        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                            <Check className="w-5 h-5 text-green-600" />
                                         </div>
                                     </div>
-                                    <p className="text-gray-600 mb-2">Estimated Calories Burned</p>
-                                    <p className="text-4xl font-bold text-gray-900">
-                                        {caloriesBurned?.toFixed(2)}
-                                        <span className="text-xl text-gray-500 ml-2">kcal</span>
+                                    <p className="text-gray-500 text-sm mb-1">Estimated Calories Burned</p>
+                                    <p className="text-3xl font-bold text-gray-900">
+                                        {caloriesBurned.toFixed(1)}
+                                        <span className="text-lg text-gray-500 ml-2">kcal</span>
                                     </p>
                                 </div>
                             )}
                             {!isPending && !isError && caloriesBurned === null && (
-                                <div className="text-center py-12">
-                                    <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                                    <p className="text-gray-500 text-lg">
-                                        Complete the form above and click "Calculate" to see your results
-                                    </p>
+                                <div className="text-center py-10">
+                                    <Activity className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                                    <p className="text-gray-500 text-sm">Enter your metrics and click "Calculate" to see results</p>
+                                </div>
+                            )}
+                            {isError && (
+                                <div className="text-center py-6 text-red-600 font-medium">
+                                    Error calculating calories. Please try again.
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </section>
 
                     {/* Action Buttons */}
-                    <div className="flex justify-end gap-4">
+                    <div className="flex justify-end gap-3">
                         <button
                             type="reset"
                             onClick={() => {
                                 reset()
                                 setCaloriesBurned(null)
                             }}
-                            className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50"
+                            className="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors duration-200"
+                            disabled={isPending}
                         >
-                            Reset Form
+                            Reset
                         </button>
                         <button
                             type="submit"
                             disabled={isPending}
-                            className={`px-8 py-3 bg-blue-600 text-white font-medium rounded-lg ${isPending
-                                ? 'opacity-50 cursor-not-allowed'
-                                : 'hover:bg-blue-700'
-                                }`}
+                            className="px-6 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isPending ? 'Calculating...' : 'Calculate Calories'}
+                            {isPending ? 'Calculating...' : 'Calculate'}
                         </button>
                     </div>
                 </form>
