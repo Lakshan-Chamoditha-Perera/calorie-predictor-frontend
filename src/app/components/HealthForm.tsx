@@ -58,6 +58,7 @@ export default function HealthForm() {
             })
         },
         onError: (error) => {
+            // console.log('Error calculating calories:', error?.response?.data || error.message)
             toast.update('calculation', {
                 render: 'Error calculating calories',
                 type: 'error',
