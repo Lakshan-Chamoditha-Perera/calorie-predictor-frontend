@@ -1,12 +1,13 @@
 'use client'
 
-export default function FormSelect({ id, label, register, options = {}, error, Icon }: any) {
+export default function FormSelect({ id, label, register, options = {}, error, Icon, description }: any) {
     return (
         <div>
             <label htmlFor={id} className="block text-sm text-gray-700 font-medium mb-1 flex items-center gap-2">
                 <Icon className="w-5 h-5 text-gray-600" />
                 {label}
             </label>
+            <p className="text-xs text-gray-500 mb-2">{description ?? "Please select an option"}</p>
             <select
                 id={id}
                 {...register(id, options)}

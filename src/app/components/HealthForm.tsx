@@ -2,15 +2,13 @@
 
 import { useForm } from 'react-hook-form'
 import { useMutation } from '@tanstack/react-query'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import axios from 'axios'
 import {
     User, Users, Ruler, Scale, Clock, Heart,
     Thermometer, Activity, Check, Calculator,
     Target, Zap, TrendingUp, Flame, Info,
-    AlertCircle,
-    Loader2,
-    CheckCircle2
+    AlertCircle, Loader2, CheckCircle2
 } from 'lucide-react'
 import { toast } from 'react-toastify'
 import FormSelect from './FormSelect'
@@ -38,7 +36,7 @@ export default function HealthForm() {
     })
 
     const [caloriesBurned, setCaloriesBurned] = useState<number | null>(null)
-    const toastId = useRef<any>(null)
+    const [activeSection, setActiveSection] = useState<'form' | 'results'>('form')
 
     const { mutate, isPending, isError } = useMutation({
         mutationFn: async (data: FormValues) => {
@@ -47,20 +45,21 @@ export default function HealthForm() {
             return response.data
         },
         onMutate: () => {
-            toastId.current = toast.loading('Calculating calories...')
+            toast.loading('Calculating calories...', { toastId: 'calculation' })
         },
         onSuccess: (result) => {
             setCaloriesBurned(result?.data?.prediction)
-            toast.update(toastId.current!, {
-                render: 'Calories calculated successfully!',
+            setActiveSection('results')
+            toast.update('calculation', {
+                render: 'Calculation complete!',
                 type: 'success',
                 isLoading: false,
                 autoClose: 3000,
             })
         },
-        onError: () => {
-            toast.update(toastId.current!, {
-                render: 'Error calculating calories.',
+        onError: (error) => {
+            toast.update('calculation', {
+                render: 'Error calculating calories',
                 type: 'error',
                 isLoading: false,
                 autoClose: 3000,
@@ -73,327 +72,365 @@ export default function HealthForm() {
         mutate(data)
     }
 
-    const formValues = watch()
-
     return (
-        <div className=" bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
-            {/* Main Content */}
-            <div className="">
-                <div className="flex flex-col lg:flex-row ">
-                    {/* Hero Section */}
-                    <div className="lg:w-1/2 bg-gradient-to-r from-indigo-700 via-blue-600 to-blue-500  overflow-hidden relative">
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                        <div className="relative p-6 sm:p-8 lg:p-12 flex flex-col justify-center h-full">
-                            <div className="text-center flex flex-col items-center  h-1/2 gap-4">
-                                <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-full backdrop-blur-sm mb-6 animate-pulse">
-                                    <Flame className="w-8 h-8 text-white" />
-                                </div>
-                                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
-                                    Calorie Burn
-                                    <span className="bg-gradient-to-r from-yellow-300 to-orange-400 bg-clip-text text-transparent"> Estimator</span>
-                                </h1>
-                                <p className="text-base sm:text-lg text-blue-100  max-w-md mx-auto lg:mx-0 leading-relaxed">
-                                    Calculate calories burned during your activities with our AI-powered tool
-                                </p>
-                                <div className="flex flex-wrap justify-center  gap-4 mt-6">
-                                    <div className="flex items-center gap-2 text-blue-100 bg-white/10 px-4 py-2 rounded-full">
-                                        <Target className="w-5 h-5" />
-                                        <span className="text-sm font-medium">High Precision</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-blue-100 bg-white/10 px-4 py-2 rounded-full">
-                                        <Zap className="w-5 h-5" />
-                                        <span className="text-sm font-medium">Fast Results</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 text-blue-100 bg-white/10 px-4 py-2 rounded-full">
-                                        <TrendingUp className="w-5 h-5" />
-                                        <span className="text-sm font-medium">Tailored Insights</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <div className="">
+            {/* Mobile Header */}
+            <header className="lg:hidden bg-gradient-to-r from-indigo-700 to-blue-600 text-white p-6">
+                <div className="flex items-center justify-center gap-3">
+                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                        <Flame className="w-6 h-6" />
                     </div>
+                    <h1 className="text-2xl font-bold">
+                        Calorie <span className="text-yellow-300">Estimator</span>
+                    </h1>
+                </div>
+            </header>
 
-                    {/* Main Form */}
-                    <div className="lg:w-1/2 bg-white rounded-2xl shadow-2xl overflow-hidden transition-all duration-300 hover:shadow-3xl">
-                        {/* Form Header */}
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 sm:p-8">
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-full">
-                                    <Calculator className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Calculate Your Burn</h2>
-                                    <p className="text-sm sm:text-base text-gray-500 mt-1">
-                                        Input your activity and health metrics below
+            <div className=" mx-auto ">
+                <div className="bg-white shadow-xl overflow-hidden">
+                    {/* Desktop Hero + Form Layout */}
+                    <div className="flex flex-col lg:flex-row min-h-[calc(100vh-8rem)]">
+                        {/* Hero Section - Left Side */}
+                        <div className="lg:w-1/2 bg-gradient-to-br from-indigo-700 to-blue-600 p-8 lg:p-12 text-white">
+                            <div className="h-full flex flex-col justify-center">
+                                <div className="max-w-md mx-auto lg:mx-0 text-center lg:text-left">
+                                    <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 rounded-full backdrop-blur-sm mb-6 animate-pulse">
+                                        <Flame className="w-8 h-8" />
+                                    </div>
+                                    <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+                                        Calorie Burn <span className="text-yellow-300">Calculator</span>
+                                    </h1>
+                                    <p className="text-lg text-blue-100 mb-8 leading-relaxed">
+                                        Get precise estimates of calories burned during physical activities using our AI-powered metabolic algorithm.
                                     </p>
+
+                                    <div className="hidden lg:block space-y-6 mt-12">
+                                        <div className="flex items-start gap-4">
+                                            <div className="mt-1 p-2 bg-white/10 rounded-lg">
+                                                <Target className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold">High Accuracy</h3>
+                                                <p className="text-blue-100 text-sm">Uses multiple biometric inputs for precise results</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="mt-1 p-2 bg-white/10 rounded-lg">
+                                                <Zap className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold">Instant Results</h3>
+                                                <p className="text-blue-100 text-sm">Get your calculation in seconds</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-4">
+                                            <div className="mt-1 p-2 bg-white/10 rounded-lg">
+                                                <TrendingUp className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <h3 className="font-semibold">Personalized</h3>
+                                                <p className="text-blue-100 text-sm">Tailored to your unique physiology</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <form onSubmit={handleSubmit(onSubmit)} className="p-6 sm:p-8 space-y-8">
-                            {/* Activity & Health Data */}
-                            <section className="space-y-4">
-                                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                    <Activity className="w-5 h-5 text-blue-600" />
-                                    Activity & Health Data
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                                    <FormInput
-                                        id="duration"
-                                        label="Duration"
-                                        description="How long was your activity?"
-                                        Icon={Clock}
-                                        type="number"
-                                        register={register}
-                                        error={errors.duration?.message}
-                                        options={{
-                                            required: 'Duration is required',
-                                            min: { value: 1, message: 'Must be at least 1 minute' },
-                                            max: { value: 1440, message: 'Cannot exceed 1440 minutes' }
-                                        }}
-                                        unit="min"
-                                        className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                                    />
-                                    <FormInput
-                                        id="heartRate"
-                                        label="Heart Rate"
-                                        description="Average heart rate during activity"
-                                        Icon={Heart}
-                                        type="number"
-                                        register={register}
-                                        error={errors.heartRate?.message}
-                                        options={{
-                                            required: 'Heart rate is required',
-                                            min: { value: 30, message: 'Must be at least 30 bpm' },
-                                            max: { value: 220, message: 'Cannot exceed 220 bpm' }
-                                        }}
-                                        unit="bpm"
-                                        className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                                    />
-                                    <FormInput
-                                        id="bodyTemp"
-                                        label="Body Temp"
-                                        description="Temperature post-activity"
-                                        Icon={Thermometer}
-                                        type="number"
-                                        step="0.1"
-                                        register={register}
-                                        error={errors.bodyTemp?.message}
-                                        options={{
-                                            required: 'Body temperature is required',
-                                            min: { value: 35, message: 'Must be at least 35°C' },
-                                            max: { value: 42, message: 'Cannot exceed 42°C' }
-                                        }}
-                                        unit="°C"
-                                        className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                                    />
+                        {/* Form Section - Right Side */}
+                        <div className="lg:w-1/2  flex justify-center items-center border ">
+                            <div className="p-6 sm:m-8  rounded-2xl shadow-lg  ">
+                                {/* Mobile Navigation Tabs */}
+                                <div className="lg:hidden flex mb-8 bg-white rounded-xl p-1 ">
+                                    <button
+                                        onClick={() => setActiveSection('form')}
+                                        className={`flex-1 py-3 px-4 rounded-lg text-center font-medium transition-colors ${activeSection === 'form' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'}`}
+                                    >
+                                        Input Form
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveSection('results')}
+                                        className={`flex-1 py-3 px-4 rounded-lg text-center font-medium transition-colors ${activeSection === 'results' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500'}`}
+                                        disabled={!caloriesBurned}
+                                    >
+                                        Results
+                                    </button>
                                 </div>
-                                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-start gap-3">
-                                    <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                                    <p className="text-sm text-blue-800">
-                                        Measure heart rate and temperature right after your activity for accurate results.
-                                    </p>
-                                </div>
-                            </section>
 
-                            {/* Personal Information */}
-                            <section className="space-y-4">
-                                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                    <User className="w-5 h-5 text-blue-600" />
-                                    Personal Information
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                                    <FormInput
-                                        id="age"
-                                        label="Age"
-                                        description="Your current age"
-                                        Icon={User}
-                                        type="number"
-                                        register={register}
-                                        error={errors.age?.message}
-                                        options={{
-                                            required: 'Age is required',
-                                            min: { value: 1, message: 'Must be at least 1 year' },
-                                            max: { value: 120, message: 'Cannot exceed 120 years' }
-                                        }}
-                                        unit="years"
-                                        className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                                    />
-                                    <FormSelect
-                                        id="sex"
-                                        label="Sex"
-                                        description="Select your biological sex"
-                                        Icon={Users}
-                                        register={register}
-                                        error={errors.sex?.message}
-                                        options={{ required: 'Sex is required' }}
-                                        choices={[
-                                            { value: 'male', label: 'Male' },
-                                            { value: 'female', label: 'Female' }
-                                        ]}
-                                        className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                                    />
-                                </div>
-                            </section>
-
-                            {/* Physical Measurements */}
-                            <section className="space-y-4">
-                                <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                    <Scale className="w-5 h-5 text-blue-600" />
-                                    Physical Measurements
-                                </h3>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                                    <FormInput
-                                        id="height"
-                                        label="Height"
-                                        description="Your height in centimeters"
-                                        Icon={Ruler}
-                                        type="number"
-                                        register={register}
-                                        error={errors.height?.message}
-                                        options={{
-                                            required: 'Height is required',
-                                            min: { value: 50, message: 'Must be at least 50 cm' },
-                                            max: { value: 300, message: 'Cannot exceed 300 cm' }
-                                        }}
-                                        unit="cm"
-                                        className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                                    />
-                                    <FormInput
-                                        id="weight"
-                                        label="Weight"
-                                        description="Your weight in kilograms"
-                                        Icon={Scale}
-                                        type="number"
-                                        step="0.1"
-                                        register={register}
-                                        error={errors.weight?.message}
-                                        options={{
-                                            required: 'Weight is required',
-                                            min: { value: 1, message: 'Must be at least 1 kg' },
-                                            max: { value: 500, message: 'Cannot exceed 500 kg' }
-                                        }}
-                                        unit="kg"
-                                        className="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-blue-500 transition-all duration-200"
-                                    />
-                                </div>
-                            </section>
-
-                            <section className="space-y-4">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <Calculator className="w-5 h-5 text-blue-600" />
+                                {/* Form Content */}
+                                <div className={`${activeSection === 'form' ? 'block' : 'hidden'} lg:block`}>
+                                    <div className="mb-8">
+                                        <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+                                            <div className="p-2 bg-blue-100 rounded-lg">
+                                                <Calculator className="w-5 h-5 text-blue-600" />
+                                            </div>
+                                            Activity Calculator
+                                        </h2>
+                                        <p className="text-gray-500 mt-2">
+                                            Fill in your details to calculate calories burned
+                                        </p>
                                     </div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Activity Results</h3>
+
+                                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                                        {/* Activity Section */}
+                                        <section className="space-y-4">
+                                            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                                <Activity className="w-5 h-5 text-blue-600" />
+                                                Activity Metrics
+                                            </h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <FormInput
+                                                    id="duration"
+                                                    label="Duration (Minites)"
+                                                    description="Activity time in minutes"
+                                                    Icon={Clock}
+                                                    type="number"
+                                                    register={register}
+                                                    error={errors.duration?.message}
+                                                    options={{
+                                                        required: 'Duration is required',
+                                                        min: { value: 1, message: 'Minimum 1 min' },
+                                                        max: { value: 1440, message: 'Maximum 24h' }
+                                                    }}
+                                                    unit="min"
+                                                />
+                                                <FormInput
+                                                    id="heartRate"
+                                                    label="Heart Rate"
+                                                    description="Average during activity"
+                                                    Icon={Heart}
+                                                    type="number"
+                                                    register={register}
+                                                    error={errors.heartRate?.message}
+                                                    options={{
+                                                        required: 'Heart Rate is required',
+                                                        min: { value: 30, message: 'Minimum 30 bpm' },
+                                                        max: { value: 220, message: 'Maximum 220 bpm' }
+                                                    }}
+                                                    unit="bpm"
+                                                />
+                                                <FormInput
+                                                    id="bodyTemp"
+                                                    label="Body Temp"
+                                                    description="Post-activity temperature"
+                                                    Icon={Thermometer}
+                                                    type="number"
+                                                    step="0.1"
+                                                    register={register}
+                                                    error={errors.bodyTemp?.message}
+                                                    options={{
+                                                        required: 'Body Temp is required',
+                                                        min: { value: 35, message: 'Minimum 35°C' },
+                                                        max: { value: 42, message: 'Maximum 42°C' }
+                                                    }}
+                                                    unit="°C"
+                                                />
+                                            </div>
+                                            <div className="bg-blue-50 p-4 rounded-lg border border-blue-100 flex items-start gap-3">
+                                                <Info className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                                <p className="text-sm text-blue-800">
+                                                    For best accuracy, measure heart rate and temperature immediately after activity.
+                                                </p>
+                                            </div>
+                                        </section>
+
+                                        {/* Personal Info Section */}
+                                        <section className="space-y-4">
+                                            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                                <User className="w-5 h-5 text-blue-600" />
+                                                Personal Details
+                                            </h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <FormInput
+                                                    id="age"
+                                                    label="Age"
+                                                    description="In years"
+                                                    Icon={User}
+                                                    type="number"
+                                                    register={register}
+                                                    error={errors.age?.message}
+                                                    options={{
+                                                        required: 'Age is required',
+                                                        min: { value: 1, message: 'Minimum 1 year' },
+                                                        max: { value: 120, message: 'Maximum 120' }
+                                                    }}
+                                                    unit="yrs"
+                                                />
+                                                <FormSelect
+                                                    id="sex"
+                                                    label="Sex"
+                                                    description="Biological sex"
+                                                    Icon={Users}
+                                                    register={register}
+                                                    error={errors.sex?.message}
+                                                    options={{ required: 'Sex is required' }}
+                                                    choices={[
+                                                        { value: 'male', label: 'Male' },
+                                                        { value: 'female', label: 'Female' }
+                                                    ]}
+                                                />
+                                                <FormInput
+                                                    id="height"
+                                                    label="Height"
+                                                    description="In centimeters"
+                                                    Icon={Ruler}
+                                                    type="number"
+                                                    register={register}
+                                                    error={errors.height?.message}
+                                                    options={{
+                                                        required: 'Height is required',
+                                                        min: { value: 50, message: 'Minimum 50 cm' },
+                                                        max: { value: 300, message: 'Maximum 300 cm' }
+                                                    }}
+                                                    unit="cm"
+                                                />
+                                                <FormInput
+                                                    id="weight"
+                                                    label="Weight"
+                                                    description="In kilograms"
+                                                    Icon={Scale}
+                                                    type="number"
+                                                    step="0.1"
+                                                    register={register}
+                                                    error={errors.weight?.message}
+                                                    options={{
+                                                        required: 'Weight is required',
+                                                        min: { value: 1, message: 'Minimum 1 kg' },
+                                                        max: { value: 500, message: 'Maximum 500 kg' }
+                                                    }}
+                                                    unit="kg"
+                                                />
+                                            </div>
+                                        </section>
+
+                                        {/* Form Actions */}
+                                        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4">
+                                            <button
+                                                type="reset"
+                                                onClick={() => {
+                                                    reset()
+                                                    setCaloriesBurned(null)
+                                                }}
+                                                className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                                disabled={isPending}
+                                            >
+                                                Reset
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                // disabled={isPending || !isValid}
+                                                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
+                                            >
+                                                {isPending ? (
+                                                    <>
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                        Calculating...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Flame className="w-4 h-4" />
+                                                        Calculate
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
 
-                                <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300">
-                                    {isPending && (
-                                        <div className="flex flex-col items-center justify-center py-8 gap-3">
-                                            <div className="relative">
-                                                <div className="w-12 h-12 bg-blue-50 rounded-full animate-pulse"></div>
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
+                                {/* Results Content */}
+                                <div className={`${activeSection === 'results' ? 'block' : 'hidden'} lg:block`}>
+                                    <div className="flex flex-col items-center justify-center h-full py-8 lg:py-12">
+                                        {isPending ? (
+                                            <div className="text-center space-y-4">
+                                                <div className="inline-flex items-center justify-center p-4 bg-blue-50 rounded-full">
+                                                    <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                                                </div>
+                                                <h3 className="text-xl font-semibold text-gray-800">Processing your data</h3>
+                                                <p className="text-gray-500">This usually takes just a few seconds...</p>
+                                            </div>
+                                        ) : isError ? (
+                                            <div className="text-center space-y-4 max-w-md">
+                                                <div className="inline-flex items-center justify-center p-4 bg-red-50 rounded-full">
+                                                    <AlertCircle className="w-8 h-8 text-red-600" />
+                                                </div>
+                                                <h3 className="text-xl font-semibold text-gray-800">Calculation Error</h3>
+                                                <p className="text-gray-500 mb-6">
+                                                    We encountered an issue processing your request. Please check your inputs and try again.
+                                                </p>
+                                                <button
+                                                    onClick={() => setActiveSection('form')}
+                                                    className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                                >
+                                                    Back to Form
+                                                </button>
+                                            </div>
+                                        ) : caloriesBurned ? (
+                                            <div className="text-center space-y-6 animate-fade-in">
+                                                <div className="inline-flex items-center justify-center p-4 bg-gradient-to-br from-green-50 to-blue-50 rounded-full">
+                                                    <CheckCircle2 className="w-10 h-10 text-green-600" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="text-xl font-semibold text-gray-800 mb-2">Your Results</h3>
+                                                    <p className="text-gray-500">Estimated calories burned during activity</p>
+                                                </div>
+                                                <div className="bg-gradient-to-r from-blue-50 to-gray-50 p-8 rounded-2xl border border-gray-200 w-full max-w-xs">
+                                                    <p className="text-5xl font-bold text-gray-900">
+                                                        {caloriesBurned.toFixed(0)}
+                                                        <span className="text-xl text-gray-500 ml-1">kcal</span>
+                                                    </p>
+                                                </div>
+                                                <div className="pt-4">
+                                                    <button
+                                                        onClick={() => setActiveSection('form')}
+                                                        className="text-blue-600 font-medium hover:text-blue-800 transition-colors flex items-center justify-center gap-2 mx-auto"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                                                        </svg>
+                                                        Calculate Again
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <p className="text-blue-600 font-medium">Calculating your results...</p>
-                                        </div>
-                                    )}
-
-                                    {caloriesBurned !== null && (
-                                        <div className="animate-fade-in-up">
-                                            <div className="flex flex-col items-center py-4">
-                                                <div className="mb-4 p-3 bg-gradient-to-br from-green-100 to-blue-100 rounded-full">
-                                                    <CheckCircle2 className="w-8 h-8 text-green-600" />
+                                        ) : (
+                                            <div className="text-center space-y-4">
+                                                <div className="inline-flex items-center justify-center p-4 bg-gray-100 rounded-full">
+                                                    <Activity className="w-8 h-8 text-gray-400" />
                                                 </div>
-                                                <p className="text-sm font-medium text-gray-500 mb-1">CALORIES BURNED</p>
-                                                <div className="flex items-end gap-1">
-                                                    <span className="text-4xl font-bold text-gray-900">
-                                                        {caloriesBurned.toFixed(1)}
-                                                    </span>
-                                                    <span className="text-lg text-gray-400 mb-1">kcal</span>
-                                                </div>
+                                                <h3 className="text-xl font-semibold text-gray-800">No Results Yet</h3>
+                                                <p className="text-gray-500 mb-6">
+                                                    Submit the form to see your calorie burn calculation
+                                                </p>
+                                                {/* <button
+                                                onClick={() => setActiveSection('form')}
+                                                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                                            >
+                                                Go to Form
+                                            </button> */}
                                             </div>
-                                        </div>
-                                    )}
-
-                                    {!isPending && !isError && caloriesBurned === null && (
-                                        <div className="flex flex-col items-center py-8 gap-4">
-                                            <div className="p-4 bg-gray-50 rounded-full">
-                                                <Activity className="w-6 h-6 text-gray-400" />
-                                            </div>
-                                            <div className="text-center space-y-1">
-                                                <p className="font-medium text-gray-500">Ready to calculate</p>
-                                                <p className="text-sm text-gray-400">Enter your details to see your results</p>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {isError && (
-                                        <div className="flex flex-col items-center py-8 gap-3">
-                                            <div className="p-3 bg-red-50 rounded-full">
-                                                <AlertCircle className="w-6 h-6 text-red-500" />
-                                            </div>
-                                            <div className="text-center">
-                                                <p className="font-medium text-red-600">Calculation error</p>
-                                                <p className="text-sm text-red-400 mt-1">Please check your inputs and try again</p>
-                                            </div>
-                                        </div>
-                                    )}
+                                        )}
+                                    </div>
                                 </div>
-                            </section>
-
-                            {/* Action Buttons */}
-                            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
-                                <button
-                                    type="reset"
-                                    onClick={() => {
-                                        reset()
-                                        setCaloriesBurned(null)
-                                    }}
-                                    className="px-6 py-2 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                                    disabled={isPending}
-                                >
-                                    Reset Form
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isPending || !isValid}
-                                    className="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
-                                >
-                                    {isPending ? (
-                                        <span className="flex items-center justify-center gap-2">
-                                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-                                            Calculating...
-                                        </span>
-                                    ) : (
-                                        <span className="flex items-center justify-center gap-2">
-                                            <Flame className="w-4 h-4" />
-                                            Calculate Calories
-                                        </span>
-                                    )}
-                                </button>
                             </div>
-                        </form>
+                        </div>
+
                     </div>
                 </div>
             </div>
 
             {/* Footer */}
-            <footer className="bg-gray-800 text-white py-6 mt-auto">
+            {/* <footer className="bg-gray-800 text-white py-6">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
-                    <p>&copy; 2025 Calorie Burn Estimator. Results are estimates based on metabolic algorithms. Consult a professional for precise health advice.</p>
+                    <p>&copy; {new Date().getFullYear()} Calorie Burn Estimator. For informational purposes only.</p>
                 </div>
-            </footer>
+            </footer> */}
 
-            {/* Custom Animation Styles */}
-            <style jsx>{`
+            <style jsx global>{`
                 @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
                 .animate-fade-in {
-                    animation: fadeIn 0.5s ease-out;
+                    animation: fadeIn 0.4s ease-out forwards;
                 }
             `}</style>
         </div>

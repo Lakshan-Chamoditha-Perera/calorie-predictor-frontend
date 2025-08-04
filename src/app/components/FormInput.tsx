@@ -1,12 +1,14 @@
 'use client'
 
-export default function FormInput({ id, label, register, options = {}, step, error, Icon }: any) {
+export default function FormInput({ id, label, register, options = {}, step, error, Icon, description }: any) {
     return (
         <div>
             <label htmlFor={id} className="block text-sm text-gray-700 font-medium mb-1 flex items-center gap-2">
                 <Icon className="w-5 h-5 text-gray-600" />
                 {label}
             </label>
+            <p className="text-xs text-gray-500 mb-2">{description ?? " .wfr"}</p>
+            {/* Input Field */}
             <input
                 id={id}
                 type="number"
