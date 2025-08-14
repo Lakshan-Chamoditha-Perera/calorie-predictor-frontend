@@ -37,36 +37,45 @@ export default function HealthForm() {
 
     const [caloriesBurned, setCaloriesBurned] = useState<number | null>(null)
     const [activeSection, setActiveSection] = useState<'form' | 'results'>('form')
-
     const { mutate, isPending, isError } = useMutation({
         mutationFn: async (data: FormValues) => {
-            const base_url = process.env.NEXT_PUBLIC_BASE_URL
-            const response = await axios.post(base_url + '/predict', data)
-            return response.data
+            const base_url = process.env.NEXT_PUBLIC_BASE_URL;
+            const reqData = {
+                age: Number(data.age),
+                height: Number(data.height),
+                weight: Number(data.weight),
+                duration: Number(data.duration),
+                heartRate: Number(data.heartRate),
+                bodyTemp: Number(data.bodyTemp),
+                sex: data.sex 
+            };
+
+           
+            const response = await axios.post(base_url + '/predict', reqData);
+            return response.data;
         },
         onMutate: () => {
-            toast.loading('Calculating calories...', { toastId: 'calculation' })
+            toast.loading('Calculating calories...', { toastId: 'calculation' });
         },
         onSuccess: (result) => {
-            setCaloriesBurned(result?.data?.prediction)
-            setActiveSection('results')
+            setCaloriesBurned(result?.data?.prediction);
+            setActiveSection('results');
             toast.update('calculation', {
                 render: 'Calculation complete!',
                 type: 'success',
                 isLoading: false,
                 autoClose: 3000,
-            })
+            });
         },
         onError: (error) => {
-            // console.log('Error calculating calories:', error?.response?.data || error.message)
             toast.update('calculation', {
                 render: 'Error calculating calories',
                 type: 'error',
                 isLoading: false,
                 autoClose: 3000,
-            })
+            });
         },
-    })
+    });
 
     const onSubmit = (data: FormValues) => {
         setCaloriesBurned(null)
