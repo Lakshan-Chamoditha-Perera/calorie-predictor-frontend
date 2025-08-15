@@ -2,11 +2,11 @@
 
 A modern, responsive Next.js frontend for estimating calories burned during physical activity. Users enter personal and activity metrics; the app sends them to a backend `predict` endpoint and displays the estimated calories burned with AI-powered metabolic algorithms.
 
-![Calorie Burn Calculator - Mobile View](/public/image1.png)
+![Calorie Burn Calculator - Desktop View](/public/image1.png)
 
 ## ✨ Features
 
-- **🎯 High Accuracy**: Uses multiple biometric inputs for precise results
+- **🎯 High Accuracy**: Used Random forest model for predict results
 - **⚡ Instant Results**: Get your calculation in seconds
 - **📱 Personalized**: Tailored to your unique physiology
 - **📱 Responsive UI**: Tailwind CSS 4-based, mobile-first layout and components
@@ -15,7 +15,9 @@ A modern, responsive Next.js frontend for estimating calories burned during phys
 - **🔔 Notifications**: `react-toastify` for user feedback during calculations
 - **🎨 Clean Icons**: `lucide-react` for a consistent icon set
 
-![Calorie Burn Calculator - Desktop View](/public/image2.png)
+![Calorie Burn Calculator - Mobile View](/public/image2.png)
+
+![Calorie Burn Calculator - Mobile View](/public/image3.png)
 
 ## 🛠️ Tech Stack
 
