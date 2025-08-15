@@ -148,7 +148,7 @@ export default function HealthForm() {
                         </div>
 
                         {/* Form Section - Right Side */}
-                        <div className="lg:w-1/2  flex justify-center items-center border ">
+                        <div className="lg:w-1/2  flex justify-center items-center   ">
                             <div className="p-6 sm:m-8  rounded-2xl shadow-lg  ">
                                 {/* Mobile Navigation Tabs */}
                                 <div className="lg:hidden flex mb-8 bg-white rounded-xl p-1 ">
